@@ -5,7 +5,7 @@ var mysql = require("mysql");
 var connection = mysql.createConnection("mysql://adminBABvSsx:l3ajh9tdm4Wt@localhost/birdshooter");
 connection.connect(function(){
 app.use(bodyparser.json());
-app.listen(80, function(){
+app.listen(8080, function(){
 app.use("/",express.static("BS"));
 app.post("/save", function(req,res){
 	console.log("INFO: Received "+JSON.stringify(req.body));
