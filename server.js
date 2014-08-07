@@ -2,7 +2,12 @@ var express = require('express');
 var app = express();
 var bodyparser = require('body-parser');
 var mysql = require("mysql");
-var connection = mysql.createConnection(global["process.env.OPENSHIFT_"+process.env.OPENSHIFT_APP_NAME.toUppercase()+"_DB_URL"]);
+function appname(){
+	var s = new String;
+	s = process.env.OPENSHIFT_APP_NAME;
+	return s.toUppercase();
+}
+var connection = mysql.createConnection(global["process.env.OPENSHIFT_"+appname()+"_DB_URL"]);
 connection.connect(function(){
 app.use(bodyparser.json());
 app.listen(process.env.OPENSHIFT_NODEJS_PORT, function(){
