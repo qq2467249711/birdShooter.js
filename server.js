@@ -4,6 +4,7 @@ var bodyparser = require('body-parser');
 var mysql = require("mysql");
 var connection = mysql.createConnection(process.env.OPENSHIFT_MYSQL_DB_URL+"birdshooter");
 connection.connect(function(){
+connection.query("create table if not exists Users (Username char(20),Password char(20), birdsKilled int, bulletsShot int, eggs int, reloadTime int, weaponCooldownT int, weaponSpeed int, bulletSpeed int, level int);",function(){
 app.use(bodyparser.json());
 app.listen(process.env.OPENSHIFT_NODEJS_PORT, process.env.OPENSHIFT_NODEJS_IP,function(){
 app.use("/",express.static(__dirname));
@@ -44,4 +45,4 @@ app.post("/load",function(req,res){
 	var ps = JSON.stringify(player);
 	console.log("INFO: Sent "+ps+" to user "+req.body.username+"\n");
 	res.send(ps);
-});});});});
+});});});});});
