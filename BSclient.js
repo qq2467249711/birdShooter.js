@@ -465,6 +465,7 @@ function load(){
 			switch(xhrl.responseText){
 				case "nonexistent":
 				case "error":
+					som();
 					break;
 				default:
 					var temp = {u:player.username,p:player.password};
