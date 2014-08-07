@@ -2,11 +2,10 @@ var express = require('express');
 var app = express();
 var bodyparser = require('body-parser');
 var mysql = require("mysql");
-console.log(JSON.stringify(process.env));
-var connection = mysql.createConnection(process.env.OPENSHIFT_BIRDSHOOTER_DB_URL);
+var connection = mysql.createConnection(process.env.OPENSHIFT_MYSQL_DB_URL);
 connection.connect(function(){
 app.use(bodyparser.json());
-app.listen(process.env.OPENSHIFT_NODEJS_PORT, function(){
+app.listen(process.env.OPENSHIFT_HAPROXY_PORT, function(){
 app.use("/",express.static("BS"));
 app.post("/save", function(req,res){
 	console.log("INFO: Received "+JSON.stringify(req.body));
