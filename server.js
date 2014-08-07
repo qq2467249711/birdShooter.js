@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var bodyparser = require('body-parser');
 var mysql = require("mysql");
+console.log(JSON.stringify(process.env));
 var connection = mysql.createConnection(process.env.OPENSHIFT_MYSQL_DB_URL);
 connection.connect(function(){
 app.use(bodyparser.json());
