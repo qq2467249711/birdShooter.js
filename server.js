@@ -2,11 +2,12 @@ var express = require('express');
 var app = express();
 var bodyparser = require('body-parser');
 var mysql = require("mysql");
+console.log(__dirname);
 var connection = mysql.createConnection(process.env.OPENSHIFT_MYSQL_DB_URL);
 connection.connect(function(){
 app.use(bodyparser.json());
 app.listen(process.env.OPENSHIFT_NODEJS_PORT, process.env.OPENSHIFT_NODEJS_IP,function(){
-app.use("/",express.static("/"));
+app.use("/",express.static(__dirname));
 app.post("/save", function(req,res){
 	console.log("INFO: Received "+JSON.stringify(req.body));
 	connection.query("select * from Users where Username =\""+req.body.username+"\" and Password=\""+req.body.password+"\"",function(err,rows){
