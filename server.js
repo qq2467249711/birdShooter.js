@@ -6,7 +6,7 @@ console.log(JSON.stringify(process.env));
 var connection = mysql.createConnection(process.env.OPENSHIFT_MYSQL_DB_URL);
 connection.connect(function(){
 app.use(bodyparser.json());
-app.listen(pocess.env.OPENSHIFT_NODEJS_PORT, process.env.OPENSHIFT_NODEJS_IP,function(){
+app.listen(process.env.OPENSHIFT_NODEJS_PORT, process.env.OPENSHIFT_NODEJS_IP,function(){
 app.use("/",express.static("BS"));
 app.post("/save", function(req,res){
 	console.log("INFO: Received "+JSON.stringify(req.body));
