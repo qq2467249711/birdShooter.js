@@ -34,11 +34,11 @@ app.post("/load",function(req,res){
 			res.send("error");
 			return;
 		}
-		if(rows[0]){
+		if(!rows[0]){
 			connection.query("insert into Users (Username,Password,birdsKilled,bulletsShot,eggs,weaponCooldownT,weaponSpeed,bulletSpeed,reloadTime,level) values (\""+req.body.username+"\",\""+req.body.password+"\",0,\"0\",\"0\",\"30\",\"15\",\"4\",\"250\",\"1\")");
 			console.log("INFO: Account \""+req.body.username+"\" does not exist, creating with password \""+req.body.password+"\"...\n");
+			res.send("nonexistent");
 		});
-		res.send("nonexistent");
 		}
 	return;}
 	var player = {
