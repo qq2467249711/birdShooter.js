@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var bodyparser = require('body-parser');
 var mysql = require("mysql");
-var connection = mysql.createConnection(OPENSHIFT_birdshooter_DB_URL );
+var connection = mysql.createConnection(global["OPENSHIFT_"+OPENSHIFT_APP_NAME.toUppercase()+"_DB_URL"]);
 connection.connect(function(){
 app.use(bodyparser.json());
 app.listen(OPENSHIFT_NODEJS_PORT, function(){
