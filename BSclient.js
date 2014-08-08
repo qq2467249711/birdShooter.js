@@ -118,8 +118,7 @@ var level = [
     }];
 var splr;
 var a;
-var A = false;
-var D = false;
+var wd;
 var spacebar = false;
 var memClrAlreadyRunning = false;
 var bulletY;
@@ -364,11 +363,7 @@ function mainIntervalf(){
     if(frameInterval)
         newFrame();
     if(iterationCount%player.weaponCooldownT === 0){
-        if(A && weapono.x > 0)
-            ox(0);
-        else
-        if(D && weapono.y <canvas.width)
-            oc(0);
+        weapono.x+=player.weaponSpeed*wd;
     }
     if(iterationCount%player.reloadTime === 0&& spacebar)
         fire(weapono.x,bulletY);
@@ -485,25 +480,19 @@ function endGame(){
     save();
     return "Automatic bird spawning OFF"
 }
-function ox(i){
-    if(!(i<=player.weaponSpeed))
-        return;
-    weapono.x--;
-    ox(i+1);
-}
 function keydown(event){
     switch(event.key){
         case "4":
         case "a":
         case "A":
         case "Left":
-            A = true;
+            wd--;
             break;
         case "6":
         case "d":
         case "D":
         case "Right":
-            D = true;
+            wd++;
             break;
         case "W":
         case "S":
@@ -516,12 +505,6 @@ function keydown(event){
             spacebar = true;
             fire(weapono.x,bulletY);
     }
-}
-function oc(i){
-    if(!(i<player.weaponSpeed))
-        return;
-    weapono.x++;
-    oc(i+1);
 }
 function username(event){
     if(event.key.length == 1){
@@ -561,13 +544,13 @@ function keyup(event){
         case "a":
         case "A":
         case "Left":
-            A = false;
+            wd++;
             break;
         case "6":
         case "d":
         case "D":
         case "Right":
-            D = false;
+            wd--;
             break;
         case "p":
         case "P":
