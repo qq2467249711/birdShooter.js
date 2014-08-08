@@ -5,7 +5,6 @@ var background = new Image();
 var birds = [];
 var bulletArrayCode = 0;
 var birdId = 0;
-var wb = 0;
 var ui = false;
 var pi = false;
 var hit = [];
@@ -119,7 +118,7 @@ var level = [
     }];
 var splr;
 var a;
-var wd;
+var wd = 0;
 var spacebar = false;
 var memClrAlreadyRunning = false;
 var bulletY;
