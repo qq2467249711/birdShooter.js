@@ -486,13 +486,13 @@ function keydown(event){
         case "a":
         case "A":
         case "Left":
-            wd--;
+            wd=-1;
             break;
         case "6":
         case "d":
         case "D":
         case "Right":
-            wd++;
+            wd=1;
             break;
         case "W":
         case "S":
@@ -544,13 +544,12 @@ function keyup(event){
         case "a":
         case "A":
         case "Left":
-            wd++;
             break;
         case "6":
         case "d":
         case "D":
         case "Right":
-            wd--;
+            wd=0;
             break;
         case "p":
         case "P":
