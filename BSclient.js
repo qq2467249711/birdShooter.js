@@ -200,26 +200,20 @@ function pauseOn(){
     clrIntervals = true;
     document.onkeydown = null;
 }
-function rmb(i){
-    if(!birds[i])
-        return;
-    makeBird(birds[i].x,birds[i].y,birds[i].direction,birds[i].speed,i+birdArrayCode);
-    rmb(i+1);
-}
 function pauseOff(){
     clrIntervals = false;
     timerInterval = true;
-    rmb(0);
+	frameInterval = true;
     document.onkeydown = keydown;
 }
 function pause(){
-    if(clrIntervals)
-        pauseOff();
-    else{
-        pauseOn();
-        som();
-        memClr();
+    if(clrIntervals){
+		pauseOff();
+		return;
     }
+    pauseOn();
+    som();
+    memClr();
 }
 function rb(i){
     if(!bird[i])
