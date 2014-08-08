@@ -5,6 +5,7 @@ var background = new Image();
 var birds = [];
 var bulletArrayCode = 0;
 var birdId = 0;
+var wb = 0;
 var ui = false;
 var pi = false;
 var hit = [];
