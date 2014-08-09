@@ -1,3 +1,7 @@
+/**
+ * Created by Junyi on 08/08/2014.
+ */
+"use strict";
 var birdI = new Image();
 var weapon = new Image();
 var bulletI = new Image();
@@ -118,7 +122,8 @@ var level = [
     }];
 var splr;
 var a;
-var wd = 0;
+var A = false;
+var D = false;
 var spacebar = false;
 var memClrAlreadyRunning = false;
 var bulletY;
@@ -126,7 +131,7 @@ var clrIntervals = false;
 function bird(ID){
     return ID-birdArrayCode < 0 ? undefined : birds[ID-birdArrayCode];
 }
-function random(min, max) {
+function random(min, max){
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 function cfk(i,bulletM){
@@ -175,25 +180,30 @@ function fire(x,y){
     bullets.push({x:x,y:y,IGotIt:false});
 }
 function spawnBird(x,y,d,s){
-    if(x && y && d && s)
+    var side = random(0,1);
+    if(x && y && d && s){
         birds.push({x:x,y:y,direction:d,speed:s});
-    else
-    if(x && y && d)
-        birds.push({x:x,y:y,direction:d,speed:random(level[player.level].birdSpeedMin,level[player.level].birdSpeedMax)});
-    else
-    if(x && y)
+        return;
+    }
+    if(x && y && d) {
+        birds.push({x: x, y: y, direction: d, speed: random(level[player.level].birdSpeedMin, level[player.level].birdSpeedMax)});
+        return;
+    }
+    if(x && y){
         birds.push({x:x,y:y,direction:random(2,3),speed:random(level[player.level].birdSpeedMin,level[player.level].birdSpeedMax)});
-    else
-        var side = random(0,1);
-    if (side === 0)
-        birds.push({x:-birdWidth,y:random(0,a),direction:2,speed:random(level[player.level].birdSpeedMin,level[player.level].birdSpeedMax)});
-    else
-    if(side === 1)
+        return;
+    }
+    if (side === 0) {
+        birds.push({x: -birdWidth, y: random(0, a), direction: 2, speed: random(level[player.level].birdSpeedMin, level[player.level].birdSpeedMax)});
+        return;
+    }
+    if(side === 1){
         birds.push({x:screen.width,y:random(0,a),direction:3,speed:random(level[player.level].birdSpeedMin,level[player.level].birdSpeedMax)});
+        return;
+    }
     level[player.level].birdsReleased++;
 }
 function pauseOn(){
-    //this function must and should be used with memClr
     endGame();
     timerInterval = false;
     clrIntervals = true;
@@ -202,13 +212,13 @@ function pauseOn(){
 function pauseOff(){
     clrIntervals = false;
     timerInterval = true;
-	frameInterval = true;
+    frameInterval = true;
     document.onkeydown = keydown;
 }
 function pause(){
     if(clrIntervals){
-		pauseOff();
-		return;
+        pauseOff();
+        return;
     }
     pauseOn();
     som();
@@ -218,7 +228,7 @@ function rb(i){
     if(!bird[i])
         return;
     removeBird(i+birdArrayCode);
-    rb(++i)
+    rb(++i);
 }
 function memClrAll(){
     endGame();
@@ -229,7 +239,7 @@ function memClrAll(){
         birdArrayCode = 0;
         birdId = 0;
     },400);
-    return "All memory cleared"
+    return "All memory cleared";
 }
 function playhit(i){
     if(!hit[i]){
@@ -240,7 +250,7 @@ function playhit(i){
     if(hit[i].paused){
         hit[i].play();
         return;}
-    playhit(i+1)
+    playhit(i+1);
 }
 function removeBird(birdID){
     if(bird(birdID))
@@ -320,7 +330,7 @@ function game(){
         player.birdsKilled+=level[player.level].birdsKilled;
         //bmvd = true;
         if(level[player.level].birdsKilled >= level[player.level].leastKills){
-            window.setTimeout(function(){level_complete.play()},500);
+            window.setTimeout(function(){level_complete.play();},500);
             displayText(level[player.level].wonMessage);
             player.level++;
             window.setTimeout(game,titleDisplayLength);
@@ -347,7 +357,7 @@ function mbs(i){
         case 3:
             birds[i].x = birds[i].x-birds[i].speed;
     }
-    mbs(i+1)
+    mbs(i+1);
 }
 function mainIntervalf(){
     iterationCount+=10;
@@ -363,7 +373,11 @@ function mainIntervalf(){
     if(frameInterval)
         newFrame();
     if(iterationCount%player.weaponCooldownT === 0){
-        weapono.x+=player.weaponSpeed*wd;
+        if(A && weapono.x > 0)
+            ox(0);
+        else
+        if(D && weapono.y <canvas.width)
+            oc(0);
     }
     if(iterationCount%player.reloadTime === 0&& spacebar)
         fire(weapono.x,bulletY);
@@ -383,7 +397,7 @@ function startGame(){
     document.onkeyup = keyup;
     document.onkeydown = keydown;
     pauseOff();
-    return "Automatic bird spawning ON"
+    return "Automatic bird spawning ON";
 }
 function save(){
     xhrs.open("POST","/save",true);
@@ -478,7 +492,13 @@ function endGame(){
     document.onkeydown = null;
     backgroundMusic.pause();
     save();
-    return "Automatic bird spawning OFF"
+    return "Automatic bird spawning OFF";
+}
+function ox(i){
+    if(i>player.weaponSpeed)
+        return;
+    weapono.x--;
+    ox(i+1);
 }
 function keydown(event){
     switch(event.key){
@@ -486,13 +506,13 @@ function keydown(event){
         case "a":
         case "A":
         case "Left":
-            wd=-1;
+            A = true;
             break;
         case "6":
         case "d":
         case "D":
         case "Right":
-            wd=1;
+            D = true;
             break;
         case "W":
         case "S":
@@ -506,16 +526,22 @@ function keydown(event){
             fire(weapono.x,bulletY);
     }
 }
+function oc(i){
+    if(i>=player.weaponSpeed)
+        return;
+    weapono.x++;
+    oc(i+1);
+}
 function username(event){
-    if(event.key.length == 1){
+    if(event.key.length === 1){
         player.username += event.key;
-        pun()}
+        pun();}
     else
         switch(event.key){
             case "Enter":
                 document.onkeydown = password;
                 ui = false;
-                window.setTimeout(function(){pi = true},500);
+                window.setTimeout(function(){pi = true;},500);
                 break;
             case "Del":
                 player.username = player.username.slice(0,-1);
@@ -523,7 +549,7 @@ function username(event){
         }
 }
 function password(event){
-    if(event.key.length == 1){
+    if(event.key.length === 1){
         player.password += event.key;
         pp();}
     else
@@ -544,12 +570,13 @@ function keyup(event){
         case "a":
         case "A":
         case "Left":
+            A = false;
             break;
         case "6":
         case "d":
         case "D":
         case "Right":
-            wd=0;
+            D = false;
             break;
         case "p":
         case "P":
@@ -593,7 +620,7 @@ function sf(){
     context.fillRect(0,0,hcl,canvas.height);
     context.fillStyle = 'red';
     context.fillRect(hcl,0,hcl,canvas.height);
-    somf()
+    somf();
 }
 function comm(event){
     if(event.clientX<hcl)
@@ -611,9 +638,8 @@ function coc(){
             startGame();
             break;
         case "m":
-            ;
     }
-    nillist()
+    nillist();
 }
 function nillist(){
     canvas.onmousemove = null;
@@ -668,7 +694,7 @@ window.onload = function(){
     bulletY = weapono.y-bulletHeight;
     background.src = "background.png";
     backgroundMusic = new Audio("background.mp3");
-    backgroundMusic.onpause = function(){backgroundMusic.play()};
+    backgroundMusic.onpause = function(){backgroundMusic.play();};
     backgroundMusic.play();
     level_complete = new Audio("level_complete.mp3");
     fail = new Audio("fail.mp3");

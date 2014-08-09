@@ -1,3 +1,4 @@
+"use strict";
 var express = require('express');
 var app = express();
 var bodyparser = require('body-parser');
@@ -14,7 +15,7 @@ app.post("/save", function(req,res){
 		if(err){
 			res.send("error");
 			console.log("ERROR: Error while attempting to retrieve user \""+req.body.username+"\" with password \""+req.body.password+"\"\nSQL: select * from Users where Username =\""+req.body.username+"\" and Password =\""+req.body.password+"\"ERROR: "+err+"\n");
-			return}
+			return;}
 		if(!rows[0]){
 			console.log("INFO: Account \""+req.body.username+"\" does not exist, creating with password \""+req.body.password+"\"...\n");
 			connection.query("insert into Users (Username,Password,birdsKilled,bulletsShot,eggs,weaponCooldownT,weaponSpeed,bulletSpeed,reloadTime,level) values (\""+req.body.username+"\",\""+req.body.password+"\",\""+req.body.birdsKilled+"\",\""+req.body.bulletsShot+"\",\""+req.body.eggs+"\",\""+req.body.weaponCooldownT+"\",\""+req.body.weaponSpeed+"\",\""+req.body.bulletSpeed+"\",\""+req.body.reloadTime+"\",\""+req.body.level+"\")");
@@ -27,7 +28,7 @@ app.post("/load",function(req,res){
 	if(err){
 		console.log("ERROR: Error while attempting to retrieve user \""+req.body.username+"\" with password \""+req.body.password+"\"\nERROR: "+err+"\nSQL: select * from Users where Username =\""+req.body.username+"\" and Password =\""+req.body.password+"\"");
 		res.send("error");
-		return}
+		return;}
 	if(!rows[0]){
 		connection.query("select * from Users where Username ="+req.body.username, function(err,rows){
 		if(err){
