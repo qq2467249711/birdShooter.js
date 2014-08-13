@@ -14,6 +14,7 @@ var pi = false;
 var hit = [];
 var level_complete;
 var fail;
+var playermap = {};
 var backgroundMusic;
 var bullets = [];
 var birdArrayCode = 0;
@@ -46,19 +47,7 @@ var sx = hhcl-birdWidth/2;
 var mx = hhcl-birdWidth+hcl;
 var iterationCount = 0;
 var mainInterval = -1024;
-var player = {
-    username:"",
-    password:"",
-    birdsKilled:0,
-    bulletsLeft:0,
-    bulletsShot:0,
-    eggs:0,
-    reloadTime:250,
-    weaponCooldownT:30,
-    weaponSpeed:15,
-    bulletSpeed:4,
-    level:1
-};
+var players = [];
 var level = [
     {birdsKilled:0,
         birdsReleased:0,
@@ -120,6 +109,7 @@ var level = [
         name:"Level 4: You better be ready...",
         bullets:1
     }];
+var ws = new WebSocket("ws://birdshooter-gamespot.rhcloud.com");
 var splr;
 var a;
 var A = false;
@@ -137,8 +127,8 @@ function random(min, max){
 function cfk(i,bulletM){
     if(!birds[i])
         return;
-    if(birds[i].x<bulletM.x&&birds[i].x+birdWidth>bulletM.x&&birds[i].y+birdHeight>bulletM.y&&birds[i].y<bulletM.y)
-        killBird(i+birdArrayCode);
+    if(birds[i].x<bulletM.x&&birds[i].x+birdWidth>bulletM.x&&birds[i].y+birdHeight>bulletM.y&&birds[i].y<bulletM.y){
+        killBird(i+birdArrayCode);level[players[0].level].birdsKilled++}
     cfk(i+1,bulletM);
 }
 function fireLoop(ID){
@@ -153,7 +143,7 @@ function fireLoop(ID){
         return;
     }
     cfk(0,{x:bullets[ID].x+3,y:bullets[ID].y-2});
-    bullets[ID].y-=player.bulletSpeed;
+    bullets[ID].y-=players[0].bulletSpeed;
     fireLoop(ID+1);
 }
 function memClr(){
@@ -163,7 +153,7 @@ function memClr(){
     window.setTimeout(function(){
         var i = 0;
         while(birds[i]){
-            if(birds[i].x>canvas.width || birds[i].x<-birdI.width || birds[i].speed > level[player.level].birdSpeedMax || birds[i].direction<0 || birds[i].direction >3){
+            if(birds[i].x>canvas.width || birds[i].x<-birdI.width || birds[i].speed > level[players[0].level].birdSpeedMax || birds[i].direction<0 || birds[i].direction >3){
                 birds.shift();
                 birdArrayCode++;
             }else{
@@ -173,9 +163,9 @@ function memClr(){
         }},500);
 }
 function fire(x,y){
-    if(player.bulletsLeft--<0)
+    if(players[0].bulletsLeft--<0)
         return;
-    player.bulletsShot++;
+    players[0].bulletsShot++;
     x+=24;
     bullets.push({x:x,y:y,IGotIt:false});
 }
@@ -186,22 +176,22 @@ function spawnBird(x,y,d,s){
         return;
     }
     if(x && y && d) {
-        birds.push({x: x, y: y, direction: d, speed: random(level[player.level].birdSpeedMin, level[player.level].birdSpeedMax)});
+        birds.push({x: x, y: y, direction: d, speed: random(level[players[0].level].birdSpeedMin, level[players[0].level].birdSpeedMax)});
         return;
     }
     if(x && y){
-        birds.push({x:x,y:y,direction:random(2,3),speed:random(level[player.level].birdSpeedMin,level[player.level].birdSpeedMax)});
+        birds.push({x:x,y:y,direction:random(2,3),speed:random(level[players[0].level].birdSpeedMin,level[players[0].level].birdSpeedMax)});
         return;
     }
     if (side === 0) {
-        birds.push({x: -birdWidth, y: random(0, a), direction: 2, speed: random(level[player.level].birdSpeedMin, level[player.level].birdSpeedMax)});
+        birds.push({x: -birdWidth, y: random(0, a), direction: 2, speed: random(level[players[0].level].birdSpeedMin, level[players[0].level].birdSpeedMax)});
         return;
     }
     if(side === 1){
-        birds.push({x:screen.width,y:random(0,a),direction:3,speed:random(level[player.level].birdSpeedMin,level[player.level].birdSpeedMax)});
+        birds.push({x:screen.width,y:random(0,a),direction:3,speed:random(level[players[0].level].birdSpeedMin,level[players[0].level].birdSpeedMax)});
         return;
     }
-    level[player.level].birdsReleased++;
+    level[players[0].level].birdsReleased++;
 }
 function pauseOn(){
     endGame();
@@ -260,7 +250,6 @@ function removeBird(birdID){
 function killBird(birdID){
     removeBird(birdID);
     playhit(0);
-    level[player.level].birdsKilled++;
 }
 function drawbird(i){
     if(!birds[i])
@@ -313,30 +302,30 @@ function game(){
     if(spawnBirds === false){
         sop = "s";
         backgroundMusic.volume = 1;
-        level[player.level].birdsKilled = 0;
-        level[player.level].birdsReleased = 0;
+        level[players[0].level].birdsKilled = 0;
+        level[players[0].level].birdsReleased = 0;
         clrScreen();
         memClrAll();
         pauseOff();
         timerInterval = false;
-        timer = level[player.level].timeLimit;
-        displayText(level[player.level].name);
-        player.bulletsLeft = level[player.level].bullets;
+        timer = level[players[0].level].timeLimit;
+        displayText(level[players[0].level].name);
+        players[0].bulletsLeft = level[players[0].level].bullets;
         window.setTimeout(startGame,titleDisplayLength);
     }else{
         endGame();
         memClrAll();
         pauseOn();
-        player.birdsKilled+=level[player.level].birdsKilled;
+        players[0].birdsKilled+=level[players[0].level].birdsKilled;
         //bmvd = true;
-        if(level[player.level].birdsKilled >= level[player.level].leastKills){
+        if(level[players[0].level].birdsKilled >= level[players[0].level].leastKills){
             window.setTimeout(function(){level_complete.play();},500);
-            displayText(level[player.level].wonMessage);
-            player.level++;
+            displayText(level[players[0].level].wonMessage);
+            players[0].level++;
             window.setTimeout(game,titleDisplayLength);
         }else{
             window.setTimeout(function(){fail.play();},500);
-            displayText(level[player.level].lostMessage);
+            displayText(level[players[0].level].lostMessage);
             window.setTimeout(game,titleDisplayLength);
         }}
 }
@@ -366,20 +355,20 @@ function mainIntervalf(){
         if(backgroundMusic.volume<=0)
             bmvd = false;
     }
-    if(iterationCount%level[player.level].spawnBirdInterval === 0 && spawnBirds)
+    if(iterationCount%level[players[0].level].spawnBirdInterval === 0 && spawnBirds)
         spawnBird();
     if(iterationCount%1000 === 0 && timerInterval)
         tick();
     if(frameInterval)
         newFrame();
-    if(iterationCount%player.weaponCooldownT === 0){
+    if(iterationCount%players[0].weaponCooldownT === 0){
         if(A && weapono.x > 0)
             ox(0);
         else
         if(D && weapono.y <canvas.width)
             oc(0);
     }
-    if(iterationCount%player.reloadTime === 0&& spacebar)
+    if(iterationCount%players[0].reloadTime === 0&& spacebar)
         fire(weapono.x,bulletY);
     if(iterationCount%500 === 0){
         if(pi)
@@ -432,21 +421,22 @@ function som(){
     somf();
 }
 function savel(){
-    window.localStorage.username = player.username;
-    window.localStorage.password = player.password;
-    window.localStorage.eggs = player.eggs;
-    window.localStorage.level = player.level;
-    window.localStorage.bulletsShot = player.bulletsShot;
-    window.localStorage.birdsKilled = player.birdsKilled;
-    window.localStorage.weaponCooldownT = player.weaponCooldownT;
-    window.localStorage.reloadTime = player.reloadTime;
-    window.localStorage.bulletSpeed = player.bulletSpeed;
-    window.localStorage.weaponSpeed = player.weaponSpeed;
+    window.localStorage.username = players[0].username;
+    window.localStorage.password = players[0].password;
+    window.localStorage.eggs = players[0].eggs;
+    window.localStorage.level = players[0].level;
+    window.localStorage.bulletsShot = players[0].bulletsShot;
+    window.localStorage.birdsKilled = players[0].birdsKilled;
+    window.localStorage.weaponCooldownT = players[0].weaponCooldownT;
+    window.localStorage.reloadTime = players[0].reloadTime;
+    window.localStorage.bulletSpeed = players[0].bulletSpeed;
+    window.localStorage.weaponSpeed = players[0].weaponSpeed;
 }
 function load(){
     loadl();
     xhrl.open("POST","/load",true);
     xhrl.setRequestHeader('Content-type','application/json;');
+	//inefficient
     xhrl.onreadystatechange = function(){
         if(xhrl.status === 200 && xhrl.readyState === 4){
             switch(xhrl.responseText){
@@ -455,36 +445,52 @@ function load(){
                     som();
                     break;
                 default:
-                    var temp = {u:player.username,p:player.password};
-                    player = JSON.parse(xhrl.responseText);
-                    player.username = temp.u;
-                    player.password = temp.p;
+                    var temp = {u:players[0].username,p:players[0].password};
+					players = [];
+                    players.push(JSON.parse(xhrl.responseText));
+                    players[0].username = temp.u;
+                    players[0].password = temp.p;
                     savel();
                     som();
             }
-        }
+        }else{
+			loadl();
+		}
     };
-    xhrl.send(JSON.stringify({username:player.username,password:player.password}));
+    xhrl.send(JSON.stringify({username:players[0].username,password:players[0].password}));
 }
 function loadl(){
+	players.push({
+		username:"",
+		password:"",
+		birdsKilled:0,
+		bulletsLeft:0,
+		bulletsShot:0,
+		eggs:0,
+		reloadTime:250,
+		weaponCooldownT:30,
+		weaponSpeed:15,
+		bulletSpeed:4,
+		level:1
+	});
     if(window.localStorage.username)
-        player.username = window.localStorage.username;
+        players[0].username = window.localStorage.username;
     if(window.localStorage.eggs)
-        player.eggs = window.localStorage.eggs;
+        players[0].eggs = window.localStorage.eggs;
     if(window.localStorage.level)
-        player.level = window.localStorage.level;
+        players[0].level = window.localStorage.level;
     if(window.localStorage.bulletsShot)
-        player.bulletsShot = window.localStorage.bulletsShot;
+        players[0].bulletsShot = window.localStorage.bulletsShot;
     if(window.localStorage.birdsKilled)
-        player.birdsKilled = window.localStorage.birdsKilled;
+        players[0].birdsKilled = window.localStorage.birdsKilled;
     if(window.localStorage.weaponCooldownT)
-        player.weaponCooldownT = window.localStorage.weaponCooldownT;
+        players[0].weaponCooldownT = window.localStorage.weaponCooldownT;
     if(window.localStorage.reloadTime)
-        player.reloadTime = window.localStorage.reloadTime;
+        players[0].reloadTime = window.localStorage.reloadTime;
     if(window.localStorage.reloadTime)
-        player.bulletSpeed = window.localStorage.bulletSpeed;
+        players[0].bulletSpeed = window.localStorage.bulletSpeed;
     if(window.localStorage.bulletSpeed)
-        player.weaponSpeed = window.localStorage.weaponSpeed;
+        players[0].weaponSpeed = window.localStorage.weaponSpeed;
 }
 function endGame(){
     spawnBirds = false;
@@ -495,7 +501,7 @@ function endGame(){
     return "Automatic bird spawning OFF";
 }
 function ox(i){
-    if(i>player.weaponSpeed)
+    if(i>players[0].weaponSpeed)
         return;
     weapono.x--;
     ox(i+1);
@@ -527,14 +533,14 @@ function keydown(event){
     }
 }
 function oc(i){
-    if(i>=player.weaponSpeed)
+    if(i>=players[0].weaponSpeed)
         return;
     weapono.x++;
     oc(i+1);
 }
 function username(event){
     if(event.key.length === 1){
-        player.username += event.key;
+        players[0].username += event.key;
         pun();}
     else
         switch(event.key){
@@ -544,13 +550,13 @@ function username(event){
                 window.setTimeout(function(){pi = true;},500);
                 break;
             case "Del":
-                player.username = player.username.slice(0,-1);
+                players[0].username = players[0].username.slice(0,-1);
                 pun();
         }
 }
 function password(event){
     if(event.key.length === 1){
-        player.password += event.key;
+        players[0].password += event.key;
         pp();}
     else
         switch(event.key){
@@ -560,7 +566,7 @@ function password(event){
                 load();
                 break;
             case "Del":
-                player.password = player.password.slice(0,-1);
+                players[0].password = players[0].password.slice(0,-1);
                 pp();
         }
 }
@@ -597,18 +603,24 @@ function keyup(event){
 function pp(){
     clrScreen();
     displayText('Password',Math.round((screen.width-30*8)/2-50),puny,Math.round(fontSize/2));
-    if(blink)
-        displayText(player.password,Math.round((screen.width-30*8)/2-50),punby);
-    else
-        displayText(player.password+"_",Math.round((screen.width-30*8)/2-50),punby);
+	if(!blink)
+        displayText("_",dbp(0),punby);
+	else
+		dbp(0);
+}
+function dbp(i){
+	if(i>=players[0].password.length)
+		return Math.round((screen.width-30*8)/2+(y-1)*50);
+    context.drawImage(birdI, 90, 219, birdWidth, birdHeight, Math.round((screen.width-30*8)/2+(y-1)*50), punby, birdWidth, birdHeight);
+	return dbp(i+1);
 }
 function pun(){
     clrScreen();
     displayText('Username',punx,puny,Math.round(fontSize/2));
     if(blink)
-        displayText(player.username,punx,punby,fontSize);
+		dbp(0);
     else
-        displayText(player.username+"_",punx,punby,fontSize);
+        displayText("_",dbp(0),punby,fontSize);
 }
 function login(){
     document.onkeydown = username;
@@ -698,7 +710,9 @@ window.onload = function(){
     backgroundMusic.play();
     level_complete = new Audio("level_complete.mp3");
     fail = new Audio("fail.mp3");
-    mainInterval = window.setInterval(mainIntervalf,10);
+	ws.onmessage = function(event){
+	};
     login();
+    mainInterval = window.setInterval(mainIntervalf,10);
     document.onclick = function(){canvas.mozRequestFullScreen();document.onclick = null;};
 };
