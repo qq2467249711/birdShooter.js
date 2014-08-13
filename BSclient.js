@@ -610,17 +610,17 @@ function pp(){
 }
 function dbp(i){
 	if(i>=players[0].password.length)
-		return Math.round((screen.width-30*8)/2+(y-1)*50);
-    context.drawImage(birdI, 90, 219, birdWidth, birdHeight, Math.round((screen.width-30*8)/2+(y-1)*50), punby, birdWidth, birdHeight);
+		return Math.round((screen.width-30*8)/2+(i-1)*50);
+    context.drawImage(birdI, 90, 219, birdWidth, birdHeight, Math.round((screen.width-30*8)/2+(i-1)*50), punby, birdWidth, birdHeight);
 	return dbp(i+1);
 }
 function pun(){
     clrScreen();
     displayText('Username',punx,puny,Math.round(fontSize/2));
     if(blink)
-		dbp(0);
+        displayText(players[0].username,punx,punby,fontSize);
     else
-        displayText("_",dbp(0),punby,fontSize);
+        displayText(players[0].username+"_",punx,punby,fontSize);
 }
 function login(){
     document.onkeydown = username;
