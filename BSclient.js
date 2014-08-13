@@ -607,8 +607,8 @@ function pp(){
 }
 function dbp(i){
 	if(i>=players[0].password.length)
-		return Math.round((screen.width-30*8)/2+(i-1)*Math.round(birdWidth/5));
-    context.drawImage(birdI, 90, 219, birdWidth, birdHeight, Math.round((screen.width-30*8)/2+(i-1)*Math.round(birdWidth/10)), punby, Math.round(birdWidth/5), Math.round(birdHeight/5));
+		return Math.round((screen.width-30*8)/2+(i-1)*Math.round(birdWidth/2));
+    context.drawImage(birdI, 90, 219, birdWidth, birdHeight, Math.round((screen.width-30*8)/2+((i-1)*birdWidth/2)/players[0].password.length), punby-40, Math.round(birdWidth/2), Math.round(birdHeight/2));
 	return dbp(i+1);
 }
 function pun(){
