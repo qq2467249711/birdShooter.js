@@ -608,7 +608,7 @@ function pp(){
 function dbp(i){
 	if(i>=players[0].password.length)
 		return Math.round((screen.width-30*8)/2+(i-1)*Math.round(birdWidth/10));
-    context.drawImage(birdI, 90, 219, Math.round(birdWidth/10), Math.round(birdHeight/10), Math.round((screen.width-30*8)/2+(i-1)*Math.round(birdWidth/10)), punby, birdWidth, birdHeight);
+    context.drawImage(birdI, 90, 219, birdWidth, birdHeight, Math.round((screen.width-30*8)/2+(i-1)*Math.round(birdWidth/10)), punby, Math.round(birdWidth/10), Math.round(birdHeight/10));
 	return dbp(i+1);
 }
 function pun(){
