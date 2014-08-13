@@ -433,7 +433,6 @@ function savel(){
     window.localStorage.weaponSpeed = players[0].weaponSpeed;
 }
 function load(){
-    loadl();
     xhrl.open("POST","/load",true);
     xhrl.setRequestHeader('Content-type','application/json;');
 	//inefficient
@@ -453,8 +452,6 @@ function load(){
                     savel();
                     som();
             }
-        }else{
-			loadl();
 		}
     };
     xhrl.send(JSON.stringify({username:players[0].username,password:players[0].password}));
@@ -610,7 +607,7 @@ function pp(){
 }
 function dbp(i){
 	if(i>=players[0].password.length)
-		return Math.round((screen.width-30*8)/2-(i-1)*Math.round(birdWidth/10));
+		return Math.round((screen.width-30*8)/2+(i-1)*Math.round(birdWidth/10));
     context.drawImage(birdI, 90, 219, Math.round(birdWidth/10), Math.round(birdHeight/10), Math.round((screen.width-30*8)/2+(i-1)*Math.round(birdWidth/10)), punby, birdWidth, birdHeight);
 	return dbp(i+1);
 }
@@ -710,6 +707,7 @@ window.onload = function(){
     backgroundMusic.play();
     level_complete = new Audio("level_complete.mp3");
     fail = new Audio("fail.mp3");
+    loadl();
 	ws.onmessage = function(event){
 	};
     login();
