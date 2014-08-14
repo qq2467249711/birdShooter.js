@@ -1,14 +1,9 @@
-/**
- * Created by Junyi on 08/08/2014.
- */
 "use strict";
 var birdI = new Image();
 var weapon = new Image();
 var bulletI = new Image();
 var background = new Image();
 var birds = [];
-var bulletArrayCode = 0;
-var birdId = 0;
 var ui = false;
 var pi = false;
 var hit = [];
@@ -37,14 +32,18 @@ var context;
 var blink = true;
 var xhrs = new XMLHttpRequest();
 var xhrl = new XMLHttpRequest();
+var hbw = Math.round(birdWidth/2);
+var hbh = Math.round(birdHeight/2);
 var punx = Math.round((screen.width-240)/2-50);
 var puny = Math.round(screen.height/2-40);
 var punby = Math.round(screen.height/2+10);
-var hcl = Math.round(screen.width/2);
-var mp = (Math.round(screen.height)-birdHeight)/2;
+var hcl = screen.width/2;
+var mp = screen.height-hbh;
 var hhcl = Math.round(screen.width/4);
-var sx = hhcl-birdWidth/2;
+var sx = Math.round(hhcl-birdWidth/2);
 var mx = hhcl-birdWidth+hcl;
+var midpoint = Math.round((screen.width-240)/2);
+var hfs = Math.round(fontSize/2);
 var iterationCount = 0;
 var mainInterval = -1024;
 var players = [];
@@ -110,7 +109,6 @@ var level = [
         bullets:1
     }];
 var ws = new WebSocket("ws://birdshooter-gamespot.rhcloud.com");
-var splr;
 var a;
 var A = false;
 var D = false;
@@ -118,17 +116,247 @@ var spacebar = false;
 var memClrAlreadyRunning = false;
 var bulletY;
 var clrIntervals = false;
-function bird(ID){
-    return ID-birdArrayCode < 0 ? undefined : birds[ID-birdArrayCode];
+
+function keydown(event){
+    switch(event.key){
+        case "4":
+        case "a":
+        case "A":
+        case "Left":
+            A = true;
+            break;
+        case "6":
+        case "d":
+        case "D":
+        case "Right":
+            D = true;
+            break;
+        case "W":
+        case "S":
+        case "w":
+        case "s":
+        case "Up":
+        case "Down":
+        case "5":
+        case " ":
+            spacebar = true;
+            fire(weapono.x,bulletY);
+    }
 }
-function random(min, max){
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+function username(event){
+    if(event.key.length === 1){
+        players[0].username += event.key;
+        pun();}
+    else
+        switch(event.key){
+            case "Enter":
+                document.onkeydown = password;
+                ui = false;
+                window.setTimeout(function(){pi = true;},500);
+                break;
+            case "Del":
+                players[0].username = players[0].username.slice(0,-1);
+                pun();
+        }
+}
+function password(event){
+    if(event.key.length === 1){
+        players[0].password += event.key;
+        pp();}
+    else
+        switch(event.key){
+            case "Enter":
+                document.onkeydown = null;
+                pi = false;
+				xhrl.open("POST","/load",true);
+				xhrl.setRequestHeader('Content-type','application/json;');
+				xhrl.onreadystatechange = function(){
+					if(xhrl.status === 200 && xhrl.readyState === 4){
+						switch(xhrl.responseText){
+							case "error":
+								som();
+								break;
+							default:
+								var temp = {u:players[0].username,p:players[0].password};
+								players = [];
+								players.push(JSON.parse(xhrl.responseText));
+								players[0].username = temp.u;
+								players[0].password = temp.p;
+								savel();
+								som();
+						}
+					}
+				};
+				xhrl.send(JSON.stringify({username:players[0].username,password:players[0].password}));
+                break;
+            case "Del":
+                players[0].password = players[0].password.slice(0,-1);
+                pp();
+        }
+}
+function keyup(event){
+    switch(event.key){
+        case "4":
+        case "a":
+        case "A":
+        case "Left":
+            A = false;
+            break;
+        case "6":
+        case "d":
+        case "D":
+        case "Right":
+            D = false;
+            break;
+        case "p":
+        case "P":
+            startGame();
+			if(clrIntervals)
+				pauseOff();
+			else
+				pauseOn();
+			som();
+			if(!memClrAlreadyRunning){
+				memClrAlreadyRunning = true;
+				window.setTimeout(function(){
+					var i = 0;
+					while(birds[i]){
+						if(birds[i].x>canvas.width || birds[i].x<-birdI.width || birds[i].speed > level[players[0].level].birdSpeedMax || birds[i].direction<0 || birds[i].direction >3){
+							birds.shift();
+							birdArrayCode++;
+						}else{
+							i++;
+						}
+						memClrAlreadyRunning = false;
+					}
+				},500);
+			}
+            break;
+        case "W":
+        case "S":
+        case "w":
+        case "s":
+        case "Up":
+        case "Down":
+        case "5":
+        case " ":
+            spacebar = false;
+    }
+}
+function comm(event){
+    if(event.clientX<hcl)
+        sf();
+    else
+        mf();
+}
+function coc(){
+    nillist();
+    switch(sop){
+        default:
+            game();
+            break;
+        case "s":
+            startGame();
+            break;
+        case "m":
+    }
+}
+function okd(event){
+    switch(event.key){
+        case "Right":
+        case "6":
+        case "D":
+        case "d":
+            mf();
+            break;
+        case "Left":
+        case "4":
+        case "A":
+        case "a":
+            sf();
+            break;
+        case "Enter":
+            switch(sop){
+                default:
+                    game();
+                    break;
+                case "s":
+                    startGame();
+                    break;
+                case "m":
+            }
+            nillist();
+    }
+}
+
+function dbp(i){
+	if(i>=players[0].password.length)
+		return midpoint+(i-1)*hbw;
+    context.drawImage(birdI, 90, 219, birdWidth, birdHeight, midpoint+(i-1)*hbw, punby-40, hbw, hbh);
+	return dbp(i+1);
+}
+function mbs(i){
+    if(!birds[i])
+        return;
+    switch(birds[i].direction){
+        case 0:
+            birds[i].y = birds[i].y+birds[i].speed;
+            break;
+        case 1:
+            birds[i].y = birds[i].y-birds[i].speed;
+            break;
+        default:
+        case 2:
+            birds[i].x = birds[i].x+birds[i].speed;
+            break;
+        case 3:
+            birds[i].x = birds[i].x-birds[i].speed;
+    }
+    mbs(i+1);
+}
+function ox(i){
+    if(i>players[0].weaponSpeed)
+        return;
+    weapono.x--;
+    ox(i+1);
+}
+function oc(i){
+    if(i>=players[0].weaponSpeed)
+        return;
+    weapono.x++;
+    oc(i+1);
+}
+function playhit(i){
+    if(!hit[i]){
+        hit.push(new Audio("hit.wav"));
+        hit[hit.length-1].play();
+        return;
+    }
+    if(hit[i].paused){
+        hit[i].play();
+        return;}
+    playhit(i+1);
+}
+function drawbird(i){
+    if(!birds[i])
+        return;
+    context.drawImage(birdI, 90, 219, birdWidth, birdHeight, birds[i].x, birds[i].y, birdWidth, birdHeight);
+    drawbird(i+1);
+}
+function drawbullet(j){
+    if(!bullets[j])
+        return;
+    context.drawImage(bulletI,bullets[j].x,bullets[j].y,bulletWidth,bulletHeight);
+    drawbullet(j+1);
 }
 function cfk(i,bulletM){
     if(!birds[i])
         return;
     if(birds[i].x<bulletM.x&&birds[i].x+birdWidth>bulletM.x&&birds[i].y+birdHeight>bulletM.y&&birds[i].y<bulletM.y){
-        killBird(i+birdArrayCode);level[players[0].level].birdsKilled++}
+		birds[i].x = 1096574;
+		playhit(0);
+		level[players[0].level].birdsKilled++;
+	}
     cfk(i+1,bulletM);
 }
 function fireLoop(ID){
@@ -146,21 +374,9 @@ function fireLoop(ID){
     bullets[ID].y-=players[0].bulletSpeed;
     fireLoop(ID+1);
 }
-function memClr(){
-    if(memClrAlreadyRunning)
-        return;
-    memClrAlreadyRunning = true;
-    window.setTimeout(function(){
-        var i = 0;
-        while(birds[i]){
-            if(birds[i].x>canvas.width || birds[i].x<-birdI.width || birds[i].speed > level[players[0].level].birdSpeedMax || birds[i].direction<0 || birds[i].direction >3){
-                birds.shift();
-                birdArrayCode++;
-            }else{
-                i++;
-            }
-            memClrAlreadyRunning = false;
-        }},500);
+
+function random(min, max){
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 function fire(x,y){
     if(players[0].bulletsLeft--<0)
@@ -168,30 +384,6 @@ function fire(x,y){
     players[0].bulletsShot++;
     x+=24;
     bullets.push({x:x,y:y,IGotIt:false});
-}
-function spawnBird(x,y,d,s){
-    var side = random(0,1);
-    if(x && y && d && s){
-        birds.push({x:x,y:y,direction:d,speed:s});
-        return;
-    }
-    if(x && y && d) {
-        birds.push({x: x, y: y, direction: d, speed: random(level[players[0].level].birdSpeedMin, level[players[0].level].birdSpeedMax)});
-        return;
-    }
-    if(x && y){
-        birds.push({x:x,y:y,direction:random(2,3),speed:random(level[players[0].level].birdSpeedMin,level[players[0].level].birdSpeedMax)});
-        return;
-    }
-    if (side === 0) {
-        birds.push({x: -birdWidth, y: random(0, a), direction: 2, speed: random(level[players[0].level].birdSpeedMin, level[players[0].level].birdSpeedMax)});
-        return;
-    }
-    if(side === 1){
-        birds.push({x:screen.width,y:random(0,a),direction:3,speed:random(level[players[0].level].birdSpeedMin,level[players[0].level].birdSpeedMax)});
-        return;
-    }
-    level[players[0].level].birdsReleased++;
 }
 function pauseOn(){
     endGame();
@@ -205,73 +397,13 @@ function pauseOff(){
     frameInterval = true;
     document.onkeydown = keydown;
 }
-function pause(){
-    if(clrIntervals){
-        pauseOff();
-        return;
-    }
-    pauseOn();
-    som();
-    memClr();
-}
-function rb(i){
-    if(!bird[i])
-        return;
-    removeBird(i+birdArrayCode);
-    rb(++i);
-}
 function memClrAll(){
     endGame();
     window.setTimeout(function(){
         bullets = [];
-        bulletArrayCode = 0;
         birds = [];
-        birdArrayCode = 0;
-        birdId = 0;
     },400);
     return "All memory cleared";
-}
-function playhit(i){
-    if(!hit[i]){
-        hit.push(new Audio("hit.wav"));
-        hit[hit.length-1].play();
-        return;
-    }
-    if(hit[i].paused){
-        hit[i].play();
-        return;}
-    playhit(i+1);
-}
-function removeBird(birdID){
-    if(bird(birdID))
-        bird(birdID).x = 1096574;
-    return bird(birdID)?"Removed bird with ID "+birdID:"Bird ID "+birdID+" does not exist";
-}
-function killBird(birdID){
-    removeBird(birdID);
-    playhit(0);
-}
-function drawbird(i){
-    if(!birds[i])
-        return;
-    context.drawImage(birdI, 90, 219, birdWidth, birdHeight, birds[i].x, birds[i].y, birdWidth, birdHeight);
-    drawbird(i+1);
-}
-function drawbullet(j){
-    if(!bullets[j])
-        return;
-    context.drawImage(bulletI,bullets[j].x,bullets[j].y,bulletWidth,bulletHeight);
-    drawbullet(j+1);
-}
-function newFrame(){
-    clrScreen();
-    mbs(0);
-    fireLoop(0);
-    drawbird(0);
-    drawbullet(0);
-    context.fillStyle = "blue";
-    context.font = fontSize+"px Calibri";
-    context.fillText(timer, 0, 50);
 }
 function clrScreen(){
     context.drawImage(background,0,0,canvas.width,canvas.height);
@@ -293,10 +425,6 @@ function displayText(text,x,y,size,color,font){
         context.fillText(text,x,y);
     else
         context.fillText(text,Math.round((screen.width-30*text.length)/2),Math.round(screen.height/2-20));
-}
-function tick(){
-    if(timer--<=0)
-        game();
 }
 function game(){
     if(spawnBirds === false){
@@ -329,25 +457,6 @@ function game(){
             window.setTimeout(game,titleDisplayLength);
         }}
 }
-function mbs(i){
-    if(!birds[i])
-        return;
-    switch(birds[i].direction){
-        case 0:
-            birds[i].y = birds[i].y+birds[i].speed;
-            break;
-        case 1:
-            birds[i].y = birds[i].y-birds[i].speed;
-            break;
-        default:
-        case 2:
-            birds[i].x = birds[i].x+birds[i].speed;
-            break;
-        case 3:
-            birds[i].x = birds[i].x-birds[i].speed;
-    }
-    mbs(i+1);
-}
 function mainIntervalf(){
     iterationCount+=10;
     if(iterationCount%100 === 0 && bmvd){
@@ -355,12 +464,25 @@ function mainIntervalf(){
         if(backgroundMusic.volume<=0)
             bmvd = false;
     }
-    if(iterationCount%level[players[0].level].spawnBirdInterval === 0 && spawnBirds)
-        spawnBird();
-    if(iterationCount%1000 === 0 && timerInterval)
-        tick();
-    if(frameInterval)
-        newFrame();
+    if(iterationCount%level[players[0].level].spawnBirdInterval === 0 && spawnBirds){   
+		if (random(0,1) === 0) 
+			birds.push({x: -birdWidth, y: random(0, a), direction: 2, speed: random(level[players[0].level].birdSpeedMin, level[players[0].level].birdSpeedMax)});
+		else
+			birds.push({x:screen.width,y:random(0,a),direction:3,speed:random(level[players[0].level].birdSpeedMin,level[players[0].level].birdSpeedMax)});
+		level[players[0].level].birdsReleased++;
+	}
+    if(iterationCount%1000 === 0 && timerInterval && --timer<=0)
+        game();
+    if(frameInterval){
+		clrScreen();
+		mbs(0);
+		fireLoop(0);
+		drawbird(0);
+		drawbullet(0);
+		context.fillStyle = "blue";
+		context.font = fontSize+"px Calibri";
+		context.fillText(timer, 0, 50);
+	}
     if(iterationCount%players[0].weaponCooldownT === 0){
         if(A && weapono.x > 0)
             ox(0);
@@ -387,13 +509,6 @@ function startGame(){
     document.onkeydown = keydown;
     pauseOff();
     return "Automatic bird spawning ON";
-}
-function save(){
-    xhrs.open("POST","/save",true);
-    xhrs.setRequestHeader('Content-type','application/json;');
-    console.log("SENT: "+JSON.stringify(player));
-    xhrs.send(JSON.stringify(player));
-    savel();
 }
 function somf(){
     context.drawImage(birdI, 90, 219, birdWidth, birdHeight, sx, mp, birdWidth, birdHeight);
@@ -432,31 +547,70 @@ function savel(){
     window.localStorage.bulletSpeed = players[0].bulletSpeed;
     window.localStorage.weaponSpeed = players[0].weaponSpeed;
 }
-function load(){
-    xhrl.open("POST","/load",true);
-    xhrl.setRequestHeader('Content-type','application/json;');
-	//inefficient
-    xhrl.onreadystatechange = function(){
-        if(xhrl.status === 200 && xhrl.readyState === 4){
-            switch(xhrl.responseText){
-                case "nonexistent":
-                case "error":
-                    som();
-                    break;
-                default:
-                    var temp = {u:players[0].username,p:players[0].password};
-					players = [];
-                    players.push(JSON.parse(xhrl.responseText));
-                    players[0].username = temp.u;
-                    players[0].password = temp.p;
-                    savel();
-                    som();
-            }
-		}
-    };
-    xhrl.send(JSON.stringify({username:players[0].username,password:players[0].password}));
+function endGame(){
+    spawnBirds = false;
+    frameInterval = false;
+    document.onkeydown = null;
+    backgroundMusic.pause();
+    xhrs.open("POST","/save",true);
+    xhrs.setRequestHeader('Content-type','application/json;');
+    console.log("SENT: "+JSON.stringify(players[0]));
+    xhrs.send(JSON.stringify(players[0]));
+    savel();
+    return "Automatic bird spawning OFF";
 }
-function loadl(){
+function pp(){
+    clrScreen();
+    displayText('Password',punx,puny,hfs);
+	if(!blink)
+        displayText("_",dbp(0),punby);
+	else
+		dbp(0);
+}
+function pun(){
+    clrScreen();
+    displayText('Username',punx,puny,hfs);
+    if(blink)
+        displayText(players[0].username,punx,punby,fontSize);
+    else
+        displayText(players[0].username+"_",punx,punby,fontSize);
+}
+function sf(){
+    context.fillStyle = 'rgb(100,150,255)';
+    context.fillRect(0,0,hcl,canvas.height);
+    context.fillStyle = 'red';
+    context.fillRect(hcl,0,hcl,canvas.height);
+    somf();
+}
+function nillist(){
+    canvas.onmousemove = null;
+    canvas.onclick = null;
+    document.onkeydown = keydown;
+}
+function mf(){
+    context.fillStyle = 'blue';
+    context.fillRect(0,0,hcl,canvas.height);
+    context.fillStyle = 'rgb(255,150,100)';
+    context.fillRect(hcl,0,hcl,canvas.height);
+    somf();
+}
+window.onload = function(){
+    canvas = document.getElementById("game");
+    context = canvas.getContext("2d");
+    canvas.width = screen.width;
+    canvas.height = screen.height;
+    birdI.src = "bird_sheet.png";
+    weapon.src = "weapon.png";
+    bulletI.src = "bullet.png";
+    a = canvas.height-weaponHeight-birdHeight;
+    weapono = {x:Math.round(canvas.width/2-weapon.width),y:Math.round(screen.height-weaponHeight)};
+    bulletY = weapono.y-bulletHeight;
+    background.src = "background.png";
+    backgroundMusic = new Audio("background.mp3");
+    backgroundMusic.onpause = function(){backgroundMusic.play();};
+    backgroundMusic.play();
+    level_complete = new Audio("level_complete.mp3");
+    fail = new Audio("fail.mp3");
 	players.push({
 		username:"",
 		password:"",
@@ -488,229 +642,10 @@ function loadl(){
         players[0].bulletSpeed = window.localStorage.bulletSpeed;
     if(window.localStorage.bulletSpeed)
         players[0].weaponSpeed = window.localStorage.weaponSpeed;
-}
-function endGame(){
-    spawnBirds = false;
-    frameInterval = false;
-    document.onkeydown = null;
-    backgroundMusic.pause();
-    save();
-    return "Automatic bird spawning OFF";
-}
-function ox(i){
-    if(i>players[0].weaponSpeed)
-        return;
-    weapono.x--;
-    ox(i+1);
-}
-function keydown(event){
-    switch(event.key){
-        case "4":
-        case "a":
-        case "A":
-        case "Left":
-            A = true;
-            break;
-        case "6":
-        case "d":
-        case "D":
-        case "Right":
-            D = true;
-            break;
-        case "W":
-        case "S":
-        case "w":
-        case "s":
-        case "Up":
-        case "Down":
-        case "5":
-        case " ":
-            spacebar = true;
-            fire(weapono.x,bulletY);
-    }
-}
-function oc(i){
-    if(i>=players[0].weaponSpeed)
-        return;
-    weapono.x++;
-    oc(i+1);
-}
-function username(event){
-    if(event.key.length === 1){
-        players[0].username += event.key;
-        pun();}
-    else
-        switch(event.key){
-            case "Enter":
-                document.onkeydown = password;
-                ui = false;
-                window.setTimeout(function(){pi = true;},500);
-                break;
-            case "Del":
-                players[0].username = players[0].username.slice(0,-1);
-                pun();
-        }
-}
-function password(event){
-    if(event.key.length === 1){
-        players[0].password += event.key;
-        pp();}
-    else
-        switch(event.key){
-            case "Enter":
-                document.onkeydown = null;
-                pi = false;
-                load();
-                break;
-            case "Del":
-                players[0].password = players[0].password.slice(0,-1);
-                pp();
-        }
-}
-function keyup(event){
-    switch(event.key){
-        case "4":
-        case "a":
-        case "A":
-        case "Left":
-            A = false;
-            break;
-        case "6":
-        case "d":
-        case "D":
-        case "Right":
-            D = false;
-            break;
-        case "p":
-        case "P":
-            startGame();
-            pause();
-            break;
-        case "W":
-        case "S":
-        case "w":
-        case "s":
-        case "Up":
-        case "Down":
-        case "5":
-        case " ":
-            spacebar = false;
-    }
-}
-function pp(){
-    clrScreen();
-    displayText('Password',Math.round((screen.width-30*8)/2-50),puny,Math.round(fontSize/2));
-	if(!blink)
-        displayText("_",dbp(0),punby);
-	else
-		dbp(0);
-}
-function dbp(i){
-	if(i>=players[0].password.length)
-		return Math.round((screen.width-30*8)/2+(i-1)*Math.round(birdWidth/2));
-    context.drawImage(birdI, 90, 219, birdWidth, birdHeight, Math.round((screen.width-30*8)/2+(i-1)*birdWidth/2), punby-40, Math.round(birdWidth/2), Math.round(birdHeight/2));
-	return dbp(i+1);
-}
-function pun(){
-    clrScreen();
-    displayText('Username',punx,puny,Math.round(fontSize/2));
-    if(blink)
-        displayText(players[0].username,punx,punby,fontSize);
-    else
-        displayText(players[0].username+"_",punx,punby,fontSize);
-}
-function login(){
-    document.onkeydown = username;
-    ui = true;
-}
-function sf(){
-    splr = true;
-    context.fillStyle = 'rgb(100,150,255)';
-    context.fillRect(0,0,hcl,canvas.height);
-    context.fillStyle = 'red';
-    context.fillRect(hcl,0,hcl,canvas.height);
-    somf();
-}
-function comm(event){
-    if(event.clientX<hcl)
-        sf();
-    else
-        mf();
-}
-function coc(){
-    nillist();
-    switch(sop){
-        default:
-            game();
-            break;
-        case "s":
-            startGame();
-            break;
-        case "m":
-    }
-    nillist();
-}
-function nillist(){
-    canvas.onmousemove = null;
-    canvas.onclick = null;
-    document.onkeydown = keydown;
-}
-function okd(event){
-    switch(event.key){
-        case "Right":
-        case "6":
-        case "D":
-        case "d":
-            mf();
-            break;
-        case "Left":
-        case "4":
-        case "A":
-        case "a":
-            sf();
-            break;
-        case "Enter":
-            switch(sop){
-                default:
-                    game();
-                    break;
-                case "s":
-                    startGame();
-                    break;
-                case "m":
-            }
-            nillist();
-    }
-}
-function mf(){
-    splr = false;
-    context.fillStyle = 'blue';
-    context.fillRect(0,0,hcl,canvas.height);
-    context.fillStyle = 'rgb(255,150,100)';
-    context.fillRect(hcl,0,hcl,canvas.height);
-    somf();
-}
-window.onload = function(){
-    canvas = document.getElementById("game");
-    context = canvas.getContext("2d");
-    canvas.width = screen.width;
-    canvas.height = screen.height;
-    birdI.src = "bird_sheet.png";
-    weapon.src = "weapon.png";
-    bulletI.src = "bullet.png";
-    a = canvas.height-weaponHeight-birdHeight;
-    weapono = {x:Math.round(canvas.width/2-weapon.width),y:Math.round(screen.height-weaponHeight)};
-    bulletY = weapono.y-bulletHeight;
-    background.src = "background.png";
-    backgroundMusic = new Audio("background.mp3");
-    backgroundMusic.onpause = function(){backgroundMusic.play();};
-    backgroundMusic.play();
-    level_complete = new Audio("level_complete.mp3");
-    fail = new Audio("fail.mp3");
-    loadl();
 	ws.onmessage = function(event){
 	};
-    login();
+    document.onkeydown = username;
+    ui = true;
     mainInterval = window.setInterval(mainIntervalf,10);
     document.onclick = function(){canvas.mozRequestFullScreen();document.onclick = null;};
 };
