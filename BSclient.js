@@ -17,6 +17,7 @@ var titleDisplayLength = 4000;
 var birdWidth = 105;
 var birdHeight = 95;
 var weaponHeight = 70;
+var weaponWidth = 52;
 var bulletWidth = 6;
 var bulletHeight = 39;
 var fontSize = 72;
@@ -38,7 +39,7 @@ var punx = Math.round((screen.width-240)/2-50);
 var puny = Math.round(screen.height/2-40);
 var punby = Math.round(screen.height/2+10);
 var hcl = screen.width/2;
-var mp = screen.height-hbh;
+var mp = screen.height/2-hbh;
 var hhcl = Math.round(screen.width/4);
 var sx = Math.round(hhcl-birdWidth/2);
 var mx = hhcl-birdWidth+hcl;
@@ -140,7 +141,6 @@ function keydown(event){
         case "5":
         case " ":
             spacebar = true;
-            fire(weapono.x,bulletY);
     }
 }
 function username(event){
@@ -240,6 +240,7 @@ function keyup(event){
         case "Down":
         case "5":
         case " ":
+			weapono.firsttime = true;
             spacebar = false;
     }
 }
@@ -379,11 +380,11 @@ function random(min, max){
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 function fire(x,y){
-    if(players[0].bulletsLeft--<0)
+    if(--players[0].bulletsLeft<0)
         return;
     players[0].bulletsShot++;
     x+=24;
-    bullets.push({x:x,y:y,IGotIt:false});
+    bullets.push({x:x,y:y});
 }
 function pauseOn(){
     endGame();
@@ -398,7 +399,6 @@ function pauseOff(){
     document.onkeydown = keydown;
 }
 function memClrAll(){
-    endGame();
     window.setTimeout(function(){
         bullets = [];
         birds = [];
@@ -434,14 +434,12 @@ function game(){
         level[players[0].level].birdsReleased = 0;
         clrScreen();
         memClrAll();
-        pauseOff();
         timerInterval = false;
         timer = level[players[0].level].timeLimit;
         displayText(level[players[0].level].name);
         players[0].bulletsLeft = level[players[0].level].bullets;
         window.setTimeout(startGame,titleDisplayLength);
     }else{
-        endGame();
         memClrAll();
         pauseOn();
         players[0].birdsKilled+=level[players[0].level].birdsKilled;
@@ -455,7 +453,8 @@ function game(){
             window.setTimeout(function(){fail.play();},500);
             displayText(level[players[0].level].lostMessage);
             window.setTimeout(game,titleDisplayLength);
-        }}
+        }
+	}
 }
 function mainIntervalf(){
     iterationCount+=10;
@@ -489,9 +488,15 @@ function mainIntervalf(){
         else
         if(D && weapono.y <canvas.width)
             oc(0);
-    }
-    if(iterationCount%players[0].reloadTime === 0&& spacebar)
-        fire(weapono.x,bulletY);
+    } 
+    if(spacebar){
+		if(weapono.firsttime){
+			weapono.timestamp = iterationCount%players[0].reloadTime;
+			weapono.firsttime = false;
+		}
+		if(iterationCount%players[0].reloadTime === weapono.timestamp)
+			fire(weapono.x,bulletY);
+	}
     if(iterationCount%500 === 0){
         if(pi)
             pp();
@@ -603,7 +608,7 @@ window.onload = function(){
     weapon.src = "weapon.png";
     bulletI.src = "bullet.png";
     a = canvas.height-weaponHeight-birdHeight;
-    weapono = {x:Math.round(canvas.width/2-weapon.width),y:Math.round(screen.height-weaponHeight)};
+    weapono = {x:Math.round(canvas.width/2-weapon.width),y:Math.round(screen.height-weaponHeight),timestamp:0,firsttime:true};
     bulletY = weapono.y-bulletHeight;
     background.src = "background.png";
     backgroundMusic = new Audio("background.mp3");
